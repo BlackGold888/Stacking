@@ -8,6 +8,7 @@ contract Staking{
 
     uint public globalRewardTime;
     uint public globalRewardPrecent;
+    address public owner;
 
     mapping(address => uint) public rewards;
     mapping(address => uint) public lastUpdateTimes;
@@ -15,11 +16,12 @@ contract Staking{
     uint public _totalSupply;
     mapping(address => uint) private _balances;
 
-    constructor(address _stakingToken, address _rewardsToken, uint _rewardTime, _globalRewardPrecent) {
+    constructor(address _stakingToken, address _rewardsToken, uint _rewardTime, uint _globalRewardPrecent) {
         stakingToken = IERC20(_stakingToken);
         rewardsToken = IERC20(_rewardsToken);
         globalRewardTime = _rewardTime;
         globalRewardPrecent = _globalRewardPrecent;
+        owner = msg.sender;
     }
 
     modifier updateReward(address account) {
@@ -48,11 +50,19 @@ contract Staking{
     }
 
     function _calcReward(address account) internal {
-        uint reward = (block.timestamp - lastUpdateTimes[account] / globalRewardTime)
+        uint reward = ((block.timestamp - lastUpdateTimes[account]) / globalRewardTime)
          * ((_balances[account] * globalRewardPrecent) / 10000);
          if(reward != 0){
              rewards[account] += reward;
              lastUpdateTimes[account] += ((block.timestamp - lastUpdateTimes[account]) / globalRewardTime) * globalRewardTime;
          }
+    }
+
+    function getRewards(address _user) external updateReward(_user) returns(uint){
+        return rewards[_user];
+    }
+
+    function totalSupply() external view returns(uint){
+        return _totalSupply;
     }
 }

@@ -34,10 +34,8 @@ const config: HardhatUserConfig = {
   },
   gasReporter: {
     enabled: (process.env.REPORT_GAS) ? true : false,
-    token: 'ETH',
     onlyCalledMethods: true,
     showTimeSpent: true,
-    gasPriceApi: 'Etherscan'
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
