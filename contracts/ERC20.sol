@@ -8,10 +8,17 @@ contract ERC20 is IERC20{
     uint256 public totalSupply;
     string public name;
     string public symbol;
+    address public owner;
 
     constructor(string memory _name, string memory _symbol) {
         name = _name;
         symbol = _symbol;
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
     }
 
     function decimals() public view virtual returns (uint8) {
@@ -38,8 +45,8 @@ contract ERC20 is IERC20{
         emit Transfer(_from, _to, _amount);
     }
     
-    function allowance(address owner, address spender) public view virtual override returns (uint256) {
-        return allowances[owner][spender];
+    function allowance(address _owner, address spender) public view virtual override returns (uint256) {
+        return allowances[_owner][spender];
     }
 
     function approve(address spender, uint256 amount) public virtual override returns (bool) {
@@ -47,8 +54,8 @@ contract ERC20 is IERC20{
         return true;
     }
 
-    function _approve(address owner,address spender,uint256 amount) internal virtual {
-        require(owner != address(0), "Approve from the zero address");
+    function _approve(address _owner,address spender,uint256 amount) internal virtual {
+        require(_owner != address(0), "Approve from the zero address");
         require(spender != address(0), "Approve to the zero address");
 
         allowances[owner][spender] = amount;
@@ -80,7 +87,7 @@ contract ERC20 is IERC20{
         return true;
     }
 
-    function mint(address _to, uint256 _amount) public virtual returns (bool) {
+    function mint(address _to, uint256 _amount) public virtual onlyOwner returns (bool){
         _mint(_to, _amount);
         return true;
     }

@@ -9,6 +9,7 @@ import "solidity-coverage";
 import "@nomiclabs/hardhat-web3";
 import "./tasks/index";
 
+
 dotenv.config();
 
 // You need to export an object to set up your config
@@ -28,8 +29,9 @@ const config: HardhatUserConfig = {
   networks: {
     ropsten: {
       url: process.env.ROPSTEN_URL || "localhost",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      gas: "auto",
+      gasPrice: "auto"
     },
   },
   gasReporter: {
