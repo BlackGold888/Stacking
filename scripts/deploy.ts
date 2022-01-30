@@ -14,14 +14,20 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const BlackGoldContract = await ethers.getContractFactory("Staking");
-  const blackgoldInstance = await BlackGoldContract.deploy(process.env.LP_TOKEN, process.env.REWARD_TOKEN, 600, 2000, 600);// Name symbo
+  const BlackGoldContract = await ethers.getContractFactory("ERC20");
+  const blackgoldInstance = await BlackGoldContract.deploy("BLACKGOLD", "BG");// Name symbo
   await blackgoldInstance.deployed();
   console.log("BlackGold deployed to:", blackgoldInstance.address);
 
-  // const paradoxInstance = await BlackGoldContract.deploy("PARADOX", "PR");
-  // await paradoxInstance.deployed();
-  // console.log("Paradox deployed to:", paradoxInstance.address);
+  const paradoxInstance = await BlackGoldContract.deploy("PARADOX", "PR");
+  await paradoxInstance.deployed();
+  console.log("Paradox deployed to:", paradoxInstance.address);
+
+  const StakingContract = await ethers.getContractFactory("Staking");
+  const stakingInstance = await StakingContract.deploy(blackgoldInstance.address, paradoxInstance.address, 600, 20, 300);
+  await stakingInstance.deployed();
+  console.log("Staking contract deployed", stakingInstance.address);
+  
 }
 
 // We recommend this pattern to be able to use async/await everywhere
