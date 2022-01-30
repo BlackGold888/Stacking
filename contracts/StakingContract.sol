@@ -93,9 +93,5 @@ contract Staking{
 
     function setGlobalfreezeTime(uint time) external onlyStakingOwner{
         globalfreezeTime = time;
-    }
-
-    function getDelay() external returns(uint){
-        return block.timestamp;
-    }   
+    } 
 }
