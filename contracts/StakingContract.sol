@@ -34,11 +34,11 @@ contract Staking{
 
     modifier checkFreezeTime() {
         uint withdrawTime = block.timestamp - freezeUpdateTimes[msg.sender];
-        require(withdrawTime > globalfreezeTime, "Withdraw available after 10 min");
+        require(withdrawTime >= globalfreezeTime, "Withdraw available after 10 min");
         _;
     } 
 
-    modifier onlyOwner() {
+    modifier onlyStakingOwner() {
         require(msg.sender == owner, "Not owner");
         _;
     }
@@ -53,7 +53,6 @@ contract Staking{
     }
 
     function unstake(uint _amount) external updateReward(msg.sender) checkFreezeTime{
-        
         _totalSupply -= _amount;
         _balances[msg.sender] -= _amount;
         stakingToken.transfer(msg.sender, _amount);
@@ -66,15 +65,17 @@ contract Staking{
     }
 
     function _calcReward(address account) internal {
-        uint reward = ((block.timestamp - lastUpdateTimes[account]) / globalRewardTime)
-         * ((_balances[account] * globalRewardPrecent) / 10000);
+        uint precent = uint(_balances[account] * globalRewardPrecent / 100);
+        uint timeLeft = block.timestamp - lastUpdateTimes[account];
+        uint reward = uint(timeLeft / globalRewardTime) * precent; 
+
          if(reward != 0){
              rewards[account] += reward;
-             lastUpdateTimes[account] += ((block.timestamp - lastUpdateTimes[account]) / globalRewardTime) * globalRewardTime;
+             lastUpdateTimes[account] = block.timestamp;
          }
     }
 
-    function getRewards(address _user) external updateReward(_user) returns(uint){
+    function getRewards(address _user) public view returns(uint256){
         return rewards[_user];
     }
 
@@ -82,15 +83,19 @@ contract Staking{
         return _totalSupply;
     }
 
-    function setGlobalRewardTime(uint time) external onlyOwner{
+    function setGlobalRewardTime(uint time) external onlyStakingOwner{
         globalRewardTime = time;
     }
 
-    function setGlobalRewardPrecent(uint time) external onlyOwner{
+    function setGlobalRewardPrecent(uint time) external onlyStakingOwner{
         globalRewardPrecent = time;
     }
 
-    function setGlobalfreezeTime(uint time) external onlyOwner{
+    function setGlobalfreezeTime(uint time) external onlyStakingOwner{
         globalfreezeTime = time;
     }
+
+    function getDelay() external returns(uint){
+        return block.timestamp;
+    }   
 }

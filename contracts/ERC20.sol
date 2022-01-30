@@ -58,8 +58,8 @@ contract ERC20 is IERC20{
         require(_owner != address(0), "Approve from the zero address");
         require(spender != address(0), "Approve to the zero address");
 
-        allowances[owner][spender] = amount;
-        emit Approval(owner, spender, amount);
+        allowances[_owner][spender] = amount;
+        emit Approval(_owner, spender, amount);
     }
 
     function transferFrom(address _from, address _to, uint256 amount) public virtual override returns (bool) {
@@ -87,7 +87,7 @@ contract ERC20 is IERC20{
         return true;
     }
 
-    function mint(address _to, uint256 _amount) public virtual onlyOwner returns (bool){
+    function mint(address _to, uint256 _amount) public virtual returns (bool){
         _mint(_to, _amount);
         return true;
     }
