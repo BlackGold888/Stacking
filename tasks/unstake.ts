@@ -24,10 +24,10 @@ task("unstake", "unstake an account's balance")
     const [addr1, addr2] = await hre.ethers.getSigners();
     const [stakingInstance, blackgoldToken, paradoxTokend] = await getContractInstance(hre);
 
-    await blackgoldToken.connect(addr1).mint(addr1.address, taskArgs.amount);
-    await blackgoldToken.connect(addr1).approve(stakingInstance.address, taskArgs.amount);
+    await blackgoldToken.connect(addr1).mint(addr1.address, hre.ethers.utils.parseEther(taskArgs.amount));
+    await blackgoldToken.connect(addr1).approve(stakingInstance.address, hre.ethers.utils.parseEther(taskArgs.amount));
     await stakingInstance.connect(addr1).stake(taskArgs.amount);
     await hre.network.provider.send("evm_increaseTime", [300]);
-    await stakingInstance.connect(addr1).unstake(50);
-    console.log(await stakingInstance.totalSupply());
+    await stakingInstance.connect(addr1).unstake(hre.ethers.utils.parseEther('5'));
+    console.log(await stakingInstance.totalStaks());
 });

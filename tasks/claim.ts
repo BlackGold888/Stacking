@@ -23,13 +23,11 @@ task("claim", "claim")
     const [addr1, addr2] = await hre.ethers.getSigners();
     const [stakingInstance, blackgoldToken, paradoxTokend] = await getContractInstance(hre);
 
-    await blackgoldToken.connect(addr2).mint(addr2.address, 100);
-    await blackgoldToken.connect(addr2).approve(stakingInstance.address, 100);
+    await blackgoldToken.connect(addr2).mint(addr2.address, hre.ethers.utils.parseEther('100'));
+    await blackgoldToken.connect(addr2).approve(stakingInstance.address, hre.ethers.utils.parseEther('100'));
 
-    await paradoxTokend.connect(addr2).mint(addr2.address, 100);
-    await paradoxTokend.connect(addr2).approve(stakingInstance.address, 100);
-    await stakingInstance.connect(addr2).stake(100);
-    await hre.network.provider.send("evm_increaseTime", [300]);
+    await stakingInstance.connect(addr2).stake(hre.ethers.utils.parseEther('100'));
+    await hre.network.provider.send("evm_increaseTime", [600]);
     await stakingInstance.claim();
-    console.log(await stakingInstance.totalSupply());
+    console.log(await stakingInstance.totalStaks());
 });

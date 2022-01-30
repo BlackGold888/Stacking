@@ -11,12 +11,15 @@ contract Staking{
     uint public globalfreezeTime;
     address public owner;
 
-    mapping(address => uint) public rewards;
-    mapping(address => uint) public lastUpdateTimes;
-    mapping(address => uint) public freezeUpdateTimes;
+    struct UserInfo {
+        uint lastUpdateTimes;
+        uint freezeUpdateTimes;
+        uint balance;
+        uint rewards;
+    }
 
-    uint public _totalSupply;
-    mapping(address => uint) private _balances;
+    mapping(address => UserInfo) private users;
+    uint public _totalStaks;
 
     constructor(address _stakingToken, address _rewardsToken, uint _rewardTime, uint _globalRewardPrecent, uint _globalfreezeTime) {
         stakingToken = IERC20(_stakingToken);
@@ -33,65 +36,66 @@ contract Staking{
     }
 
     modifier checkFreezeTime() {
-        uint withdrawTime = block.timestamp - freezeUpdateTimes[msg.sender];
+        uint withdrawTime = block.timestamp - users[msg.sender].freezeUpdateTimes;
         require(withdrawTime >= globalfreezeTime, "Withdraw available after 10 min");
         _;
     } 
 
-    modifier onlyStakingOwner() {
+    modifier onlyOwner() {
         require(msg.sender == owner, "Not owner");
         _;
     }
 
     function stake(uint _amount) external updateReward(msg.sender) {
-        _totalSupply += _amount; 
-        _balances[msg.sender] += _amount;
-        lastUpdateTimes[msg.sender] = block.timestamp;
-        freezeUpdateTimes[msg.sender] = block.timestamp;
+        require(_amount > 0, "Amount should be bigger 0");
+        users[msg.sender] = UserInfo(block.timestamp, block.timestamp, _amount, 0);
 
+        _totalStaks += _amount; 
         stakingToken.transferFrom(msg.sender, address(this), _amount);
     }
 
     function unstake(uint _amount) external updateReward(msg.sender) checkFreezeTime{
-        _totalSupply -= _amount;
-        _balances[msg.sender] -= _amount;
+        require(_amount > 0, "Amount should be bigger 0");
+        require(users[msg.sender].balance >= _amount, "Your balance less than amount");
+        users[msg.sender].balance -= _amount;
+        _totalStaks -= _amount;
         stakingToken.transfer(msg.sender, _amount);
     }
 
     function claim() external updateReward(msg.sender) checkFreezeTime{
-        uint reward = rewards[msg.sender];
-        rewards[msg.sender] = 0;
-        rewardsToken.transfer(msg.sender, reward);
+        require(users[msg.sender].rewards > 0, "Amount should be bigger 0");
+        rewardsToken.transfer(msg.sender, users[msg.sender].rewards);
+        users[msg.sender].rewards = 0;
     }
 
-    function _calcReward(address account) internal {
-        uint precent = uint(_balances[account] * globalRewardPrecent / 100);
-        uint timeLeft = block.timestamp - lastUpdateTimes[account];
-        uint reward = uint(timeLeft / globalRewardTime) * precent; 
+    function _calcReward(address _account) internal {
+        uint precent = (users[_account].balance * globalRewardPrecent / 100);
+        uint timeLeft = block.timestamp - users[_account].lastUpdateTimes;
+        uint reward = (timeLeft / globalRewardTime) * precent; 
 
          if(reward != 0){
-             rewards[account] += reward;
-             lastUpdateTimes[account] = block.timestamp;
+             users[_account].rewards += reward;
+             users[_account].lastUpdateTimes = block.timestamp;
          }
     }
 
-    function getRewards(address _user) public view returns(uint256){
-        return rewards[_user];
+    function getRewards(address _user) public view returns(uint){
+        return users[_user].rewards;
     }
 
-    function totalSupply() external view returns(uint){
-        return _totalSupply;
+    function totalStaks() external view returns(uint){
+        return _totalStaks;
     }
 
-    function setGlobalRewardTime(uint time) external onlyStakingOwner{
+    function setGlobalRewardTime(uint time) external onlyOwner{
         globalRewardTime = time;
     }
 
-    function setGlobalRewardPrecent(uint time) external onlyStakingOwner{
+    function setGlobalRewardPrecent(uint time) external onlyOwner{
         globalRewardPrecent = time;
     }
 
-    function setGlobalfreezeTime(uint time) external onlyStakingOwner{
+    function setGlobalfreezeTime(uint time) external onlyOwner{
         globalfreezeTime = time;
     } 
 }

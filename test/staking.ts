@@ -45,7 +45,7 @@ describe("STAKING", function () {
         await stakingToken.connect(addr1).mint(addr1.address, 100);
         await stakingToken.connect(addr1).approve(staking.address, 10);
         await staking.connect(addr1).stake(10);
-        expect(await staking.totalSupply()).to.equal(10);
+        expect(await staking.totalStaks()).to.equal(10);
     });
 
     it("Should return the contract _totalSupply after unstake unstack", async function () {
@@ -60,7 +60,7 @@ describe("STAKING", function () {
         }
 
         await staking.connect(addr1).unstake(10);
-        expect(await staking.totalSupply()).to.equal(0);
+        expect(await staking.totalStaks()).to.equal(0);
     });
 
     it("Should return the contract after claim", async function () {
@@ -76,6 +76,13 @@ describe("STAKING", function () {
 
         await staking.connect(addr1).claim();
         expect(await rewardToken.balanceOf(addr1.address)).to.equal(40);
+    });
+
+    it.only("Should return the contract stack", async function () {
+      await stakingToken.connect(addr1).mint(addr1.address, 100);
+      await stakingToken.connect(addr1).approve(staking.address, 10);
+      await staking.connect(addr1).stake(10);      
+      await expect(staking.connect(addr1).unstake(10)).to.be.revertedWith("Withdraw available after 10 min");
     });
   });
  

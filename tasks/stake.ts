@@ -22,10 +22,10 @@ task("stake", "Approve an account's balance")
   .addParam("amount", "The amount")
   .setAction(async (taskArgs, hre) => {
     const [addr1, addr2] = await hre.ethers.getSigners();
-    const [stakingInstance, blackgoldToken, paradoxTokend] = await getContractInstance(hre);
+    const [stakingInstance, blackgoldToken] = await getContractInstance(hre);
 
-    await blackgoldToken.connect(addr1).mint(addr1.address, taskArgs.amount);
-    await blackgoldToken.connect(addr1).approve(stakingInstance.address, taskArgs.amount);
-    await stakingInstance.connect(addr1).stake(taskArgs.amount / 2);
-    console.log(await stakingInstance.totalSupply());
+    await blackgoldToken.connect(addr1).mint(addr1.address, hre.ethers.utils.parseEther(taskArgs.amount));
+    await blackgoldToken.connect(addr1).approve(stakingInstance.address, hre.ethers.utils.parseEther(taskArgs.amount));
+    await stakingInstance.connect(addr1).stake(hre.ethers.utils.parseEther(taskArgs.amount));
+    console.log(await stakingInstance.totalStaks());
 });
